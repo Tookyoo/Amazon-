@@ -2,8 +2,6 @@ import { cart } from "../../data/cart.js";
 import { getProducts } from "../../data/products.js";
 import { formatCurrency } from "../utils/format-currency.js";
 
-renderCheckout();
-
 export function renderCheckout() {
   const root = document.querySelector(".render-order-summary");
   root.innerHTML = cart.map(cartItem).join("");

@@ -1,7 +1,6 @@
 import { products } from "../../data/products.js";
 import { formatCurrency } from "../utils/format-currency.js";
-
-renderAmazon();
+import { cart, appState } from "../../data/cart.js";
 
 export function renderAmazon() {
   const root = document.querySelector(".render-grid");
@@ -17,7 +16,15 @@ function sizeChart(type, link) {
     : "";
 }
 
-function productCard({ image, name, rating, priceCents, type, sizeChartLink }) {
+function productCard({
+  id,
+  image,
+  name,
+  rating,
+  priceCents,
+  type,
+  sizeChartLink,
+}) {
   return `
            <div class="product-container">
                <div class="product-image-container">
@@ -42,7 +49,7 @@ function productCard({ image, name, rating, priceCents, type, sizeChartLink }) {
                <div class="product-price">$${formatCurrency(priceCents)}</div>
 
                <div class="product-quantity-container">
-                  <select>
+                  <select class="value-selector-${id}">
                   <option selected value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>  
@@ -60,12 +67,13 @@ function productCard({ image, name, rating, priceCents, type, sizeChartLink }) {
                   ${sizeChart(type, sizeChartLink)}
                </div>
 
-               <div class="added-to-cart">
+               <div class="added-to-cart ${appState.hasIds[id] ? "active" : ""}" 
+               data-product-id="${id}">
                   <img src="src/data/images/icons/checkmark.png" />
                   Added
                </div>
 
-               <button class="add-to-cart-button button-primary">Add to Cart</button>
+               <button class="add-to-cart-button button-primary" data-product-id="${id}">Add to Cart</button>
         </div>
 
       `;

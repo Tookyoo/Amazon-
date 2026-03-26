@@ -209,3 +209,22 @@
   margin-top: 11px;
   margin-bottom: 15px;
 }
+
+.new-input {
+  max-width: 25px;
+}
+
+.new-input,
+.save-quantity-link {
+  display: none;
+}
+
+.product-quantity.active .update-quantity-link,
+.product-quantity.active .delete-quantity-link {
+  display: none;
+}
+
+.product-quantity.active .new-input,
+.product-quantity.active .save-quantity-link {
+  display: block;
+}

@@ -1,6 +1,6 @@
 import { products } from "../../data/products.js";
 import { formatCurrency } from "../utils/format-currency.js";
-import { cart, appState } from "../../data/cart.js";
+import { appState } from "../../data/cart.js";
 
 export function renderAmazon() {
   const root = document.querySelector(".render-grid");

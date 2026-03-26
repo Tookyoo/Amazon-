@@ -1,5 +1,9 @@
-import { renderCheckout } from "../components/pages/checkout-ui.js";
-import { renderCheckoutHeader } from "../components/shared/cart-controller.js";
+import {
+  renderCheckout,
+  renderCheckoutHeader,
+} from "../components/pages/checkout-ui.js";
+import { setupDelegateListener } from "../components/shared/cart-controller.js";
 
 renderCheckoutHeader();
 renderCheckout();
+setupDelegateListener();

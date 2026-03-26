@@ -1,9 +1,11 @@
-import { cart, appState } from "../../data/cart.js";
+import { cart, appState, removeFromCart } from "../../data/cart.js";
 import { saveToStorage } from "../../data/save-storage.js";
 import { renderAmazon } from "../pages/amazon-ui.js";
+import { renderCheckout, renderCheckoutHeader } from "../pages/checkout-ui.js";
 
 export function setupDelegateListener() {
   const productContainer = document.querySelector(".render-grid");
+  const checkOutContainer = document.querySelector(".render-order-summary");
 
   if (productContainer) {
     productContainer.addEventListener("click", (e) => {
@@ -14,6 +16,47 @@ export function setupDelegateListener() {
         const productId = target.dataset.productId;
         addToCart(productId);
         popupMessage(productId);
+      }
+    });
+  }
+
+  if (checkOutContainer) {
+    checkOutContainer.addEventListener("click", (e) => {
+      const target = e.target;
+      const delBtn = target.closest(".delete-quantity-link");
+
+      if (delBtn) {
+        const productId = target.dataset.productId;
+        removeFromCart(productId);
+        renderCheckout();
+        renderCheckoutHeader();
+      }
+    });
+  }
+
+  if (checkOutContainer) {
+    checkOutContainer.addEventListener("click", (e) => {
+      const target = e.target;
+      const upBtn = target.closest(".update-quantity-link");
+
+      if (upBtn) {
+        const productId = target.dataset.productId;
+        setValue(true, productId);
+      }
+    });
+  }
+
+  if (checkOutContainer) {
+    checkOutContainer.addEventListener("click", (e) => {
+      const target = e.target;
+      const saveBtn = target.closest(".save-quantity-link");
+
+      if (saveBtn) {
+        const productId = target.dataset.productId;
+
+        setNewQuantity(productId);
+        renderCheckoutHeader();
+        setValue(false, productId);
       }
     });
   }
@@ -33,6 +76,7 @@ export function addToCart(productId) {
       productId,
       quantity,
       isActive: false,
+      isUpdated: false,
     });
   }
 
@@ -44,7 +88,7 @@ export function addToCart(productId) {
   saveToStorage();
 }
 
-function calculateQuantity() {
+export function calculateQuantity() {
   return cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
@@ -52,36 +96,6 @@ export function showQuantity() {
   const totalQuantity = calculateQuantity();
 
   document.querySelector(".render-cart-quantity").textContent = totalQuantity;
-}
-
-export function renderCheckoutHeader() {
-  const root = document.querySelector(".render-checkout-header");
-  const totalQuantity = calculateQuantity();
-
-  root.innerHTML = `
-    <div class="header-content">
-        <div class="checkout-header-left-section">
-          <a href="amazon.html">
-            <img class="amazon-logo" src="src/data/images/amazon-logo.png" />
-            <img
-              class="amazon-mobile-logo"
-              src="src/data/images/amazon-mobile-logo.png"
-            />
-          </a>
-        </div>
-
-        <div class="checkout-header-middle-section">
-          Checkout (<a class="return-to-home-link" href="amazon.html">${totalQuantity} items</a
-          >)
-        </div>
-
-        <div class="checkout-header-right-section">
-          <img src="src/data/images/icons/checkout-lock-icon.png" />
-        </div>
-      </div>
-  `;
-
-  saveToStorage();
 }
 
 function popupMessage(productId) {
@@ -99,4 +113,33 @@ function popupMessage(productId) {
 
   saveToStorage();
   renderAmazon();
+}
+
+function setValue(isEditing, productId) {
+  /*  if (isEditing) {
+    appState.isUpdatingQuantity = productId;
+  } else {
+    appState.isUpdatingQuantity = null;
+  } */
+
+  /* appState.isUpdatingQuantity = isEditing && productId; // short circuit evaluation */
+  appState.isUpdatingQuantity = isEditing ? productId : null;
+
+  renderCheckout();
+}
+
+function setNewQuantity(productId) {
+  const matchingProduct = cart.find((item) => item.productId === productId);
+  const inputValue = document.querySelector(
+    `.new-input[data-product-id="${productId}"]`,
+  );
+  const newQuantity = Number(inputValue.value);
+
+  if (Number(inputValue.value) <= 0 || Number(inputValue.value) >= 100)
+    return alert("Items must be greater than 0 and less than 100!");
+
+  if (matchingProduct) {
+    matchingProduct.quantity = newQuantity;
+    saveToStorage();
+  }
 }

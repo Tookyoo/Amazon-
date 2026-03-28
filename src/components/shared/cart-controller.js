@@ -2,6 +2,7 @@ import { cart, appState, removeFromCart } from "../../data/cart.js";
 import { saveToStorage } from "../../data/save-storage.js";
 import { renderAmazon } from "../pages/amazon-ui.js";
 import { renderCheckout, renderCheckoutHeader } from "../pages/checkout-ui.js";
+/* import { selectDeliveryDate } from "./delivery-controller.js"; */
 
 export function setupDelegateListener() {
   const productContainer = document.querySelector(".render-grid");
@@ -60,6 +61,19 @@ export function setupDelegateListener() {
       }
     });
   }
+
+  if (checkOutContainer) {
+    checkOutContainer.addEventListener("change", (e) => {
+      const target = e.target;
+      const radio = target.closest(".delivery-option-input");
+
+      if (radio) {
+        const productId = target.dataset.productId;
+        const deliveryOptionId = target.dataset.deliveryOptionId;
+        selectDeliveryDate(productId, deliveryOptionId);
+      }
+    });
+  }
 }
 
 export function addToCart(productId) {
@@ -75,6 +89,7 @@ export function addToCart(productId) {
     cart.push({
       productId,
       quantity,
+      deliveryOptionId: "1",
       isActive: false,
       isUpdated: false,
     });
@@ -128,7 +143,7 @@ function setValue(isEditing, productId) {
   renderCheckout();
 }
 
-function setNewQuantity(productId) {
+function setNewQuantity() {
   const matchingProduct = cart.find((item) => item.productId === productId);
   const inputValue = document.querySelector(
     `.new-input[data-product-id="${productId}"]`,
@@ -142,4 +157,15 @@ function setNewQuantity(productId) {
     matchingProduct.quantity = newQuantity;
     saveToStorage();
   }
+}
+
+function selectDeliveryDate(productId, deliveryOptionId) {
+  const matchingItem = cart.find((item) => item.productId === productId);
+
+  if (matchingItem) {
+    matchingItem.deliveryOptionId = deliveryOptionId;
+    renderCheckout();
+  }
+
+  saveToStorage();
 }

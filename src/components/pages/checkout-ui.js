@@ -2,6 +2,11 @@ import { cart, appState } from "../../data/cart.js";
 import { getProducts } from "../../data/products.js";
 import { formatCurrency } from "../utils/format-currency.js";
 import { calculateQuantity } from "../shared/cart-controller.js";
+import { deliveryOptions } from "../../data/delivery-options.js";
+import {
+  getDeliveryOptions,
+  calculateDeliveryDate,
+} from "../shared/delivery-controller.js";
 
 export function renderCheckoutHeader() {
   const root = document.querySelector(".render-checkout-header");
@@ -36,13 +41,15 @@ export function renderCheckout() {
   root.innerHTML = cart.map(cartItem).join("");
 }
 
-function cartItem({ productId, quantity }) {
+function cartItem({ productId, quantity, deliveryOptionId }) {
   const matchingProduct = getProducts(productId);
+  const matchingDeliveryOption = getDeliveryOptions(deliveryOptionId);
+  const dateString = calculateDeliveryDate(matchingDeliveryOption.deliveryDays);
   const isUpdated = appState.isUpdatingQuantity === productId ? "active" : "";
 
   return `
           <div class="cart-item-container">
-            <div class="delivery-date">Delivery date: Tuesday, June 21</div>
+            <div class="delivery-date">Delivery date: ${dateString} </div>
 
             <div class="cart-item-details-grid">
               <img
@@ -76,42 +83,37 @@ function cartItem({ productId, quantity }) {
                 <div class="delivery-options-title">
                   Choose a delivery option:
                 </div>
-                <div class="delivery-option">
-                  <input
-                    type="radio"
-                    checked
-                    class="delivery-option-input"
-                    name="delivery-option-1"
-                  />
-                  <div>
-                    <div class="delivery-option-date">Tuesday, June 21</div>
-                    <div class="delivery-option-price">FREE Shipping</div>
-                  </div>
-                </div>
-                <div class="delivery-option">
-                  <input
-                    type="radio"
-                    class="delivery-option-input"
-                    name="delivery-option-1"
-                  />
-                  <div>
-                    <div class="delivery-option-date">Wednesday, June 15</div>
-                    <div class="delivery-option-price">$4.99 - Shipping</div>
-                  </div>
-                </div>
-                <div class="delivery-option">
-                  <input
-                    type="radio"
-                    class="delivery-option-input"
-                    name="delivery-option-1"
-                  />
-                  <div>
-                    <div class="delivery-option-date">Monday, June 13</div>
-                    <div class="delivery-option-price">$9.99 - Shipping</div>
-                  </div>
-                </div>
+                ${renderDeliveryOption(productId, deliveryOptionId)}
               </div>
             </div>
           </div>
       `;
+}
+
+function renderDeliveryOption(productId, deliveryOptionId) {
+  return deliveryOptions
+    .map(({ id, deliveryDays, priceCents }) => {
+      const dateString = calculateDeliveryDate(deliveryDays);
+      const isChecked = deliveryOptionId === id ? "checked" : "";
+      const shippingText =
+        priceCents === 0 ? "FREE" : `$${formatCurrency(priceCents)}`;
+
+      return `
+      <div class="delivery-option">
+                  <input
+                    type="radio"
+                    class="delivery-option-input"
+                    data-delivery-option-id="${id}"
+                    data-product-id="${productId}"
+                    name="delivery-option-${productId}" 
+                    ${isChecked}
+                  />
+                  <div>
+                    <div class="delivery-option-date">${dateString}</div>
+                    <div class="delivery-option-price">${shippingText} - Shipping</div>
+                  </div>
+                </div>
+  `;
+    })
+    .join("");
 }
